@@ -49,7 +49,7 @@ under two variants: **no-remove** (all pseudo-labels kept) and **remove-unknown*
 ### Heatmaps — F1 by K and N
 
 <p align="center">
-<img src="plots/f1_heatmap.png" alt="F1 Heatmaps" width="800"/>
+<img src="assets/plots/f1_heatmap.png" alt="F1 Heatmaps" width="800"/>
 </p>
 
 **Conclusion:**  
@@ -62,7 +62,7 @@ under two variants: **no-remove** (all pseudo-labels kept) and **remove-unknown*
 ### Line plots — Effect of K on F1
 
 <p align="center">
-<img src="plots/k_effect.png" alt="K vs F1" width="800"/>
+<img src="assets/plots/k_effect.png" alt="K vs F1" width="800"/>
 </p>
 
 **Conclusions:**  
