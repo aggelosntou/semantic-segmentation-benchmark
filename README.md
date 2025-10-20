@@ -30,8 +30,8 @@
 ### Quantitative Comparisons
 
 <p align="center">
-  <img src="class_comparison.png" alt="Class-wise comparison" width="450"/>
-  <img src="model_comparison.png" alt="Model comparison" width="450"/>
+  <img src="assets/class_comparison.png" alt="Class-wise comparison" width="450"/>
+  <img src="assets/model_comparison.png" alt="Model comparison" width="450"/>
 </p>
 
 <p align="center">
