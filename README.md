@@ -1,11 +1,11 @@
-# Semantic Segmentation Benchmark — Semi-Supervised Satellite Imagery 🛰️
+# Semantic Segmentation Benchmark — Semi-Supervised Satellite Imagery 
 
 > Exploring semi-supervised learning for **semantic segmentation of satellite data**.  
 > Benchmarks include U-Net, DeepLabV3, YOLO-Seg, and Random Forest models under a **pseudo-labeling pipeline**.
 
 ---
 
-## 🔥 Highlights
+## Highlights
 - **Multiple model families** benchmarked under the same training/eval protocol.  
 - **Semi-supervised pipeline** with pseudo-label generation, consensus filtering, and retraining.  
 - **Reproducible experiments** 
@@ -13,7 +13,7 @@
 
 ---
 
-## 📊 Results
+## Results
 
 <p align="center">
   <img src="dataset/test/image/0005.jpg" alt="Input image" width="250"/>
@@ -72,7 +72,7 @@ under two variants: **no-remove** (all pseudo-labels kept) and **remove-unknown*
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 ```bash
 # 1. Clone & env
