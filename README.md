@@ -35,7 +35,7 @@
 </p>
 
 <p align="center">
-  <b>Left:</b> Class-wise F1 Comparison • <b>Right:</b> Model Performance Comparison
+  <b>Top:</b> Class-wise F1 Comparison • <b>Bottom:</b> Model Performance Comparison
 </p>
 
 
