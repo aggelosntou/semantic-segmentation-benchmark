@@ -107,17 +107,17 @@ def train_model(model_type, train_dir, case_name):
     is_mac_simulation = not torch.cuda.is_available()
     
     if is_mac_simulation:
-        print(f"    🖥️  Running on Mac (CPU) - simulating training process...")
-        
+        print("    Running on CPU - simulating training process")
+
         # Simulate training for Mac testing
         import time
-        print(f"    🔄 Simulating training for {model_type}...")
+        print(f"    Simulating training for {model_type}...")
         time.sleep(2)  # Simulate training time
-        
+
         # Create output directory
         model_output = OUTPUT_DIR / case_name / model_type
         model_output.mkdir(parents=True, exist_ok=True)
-        
+
         # Create dummy model file
         if model_type == "deeplab":
             model_file = model_output / "best_model.pth"
@@ -127,15 +127,15 @@ def train_model(model_type, train_dir, case_name):
             model_file = model_output / "best_model.pt"
         elif model_type == "rf":
             model_file = model_output / "best_model.pkl"
-        
+
         model_file.write_text(f"Dummy {model_type} model for testing - replace with real model on CUDA machine")
-        
-        print(f"    ✅ {model_type} training simulation completed")
-        print(f"    📁 Dummy model created for testing")
+
+        print(f"    {model_type} training simulation completed")
+        print(f"    Dummy model created for testing")
         return True
     
     # Real training for CUDA laptop
-    print(f"    🚀 Running real training on CUDA...")
+    print("    Running real training on CUDA")
     
     # Create output directory
     model_output = OUTPUT_DIR / case_name / model_type
@@ -179,7 +179,7 @@ def train_model(model_type, train_dir, case_name):
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800, env=env)
         
         if result.returncode == 0:
-            print(f"    ✅ {model_type} training completed successfully")
+            print(f"    {model_type} training completed successfully")
             
             # Copy trained model to output directory
             scripts_dir = Path("scripts")
@@ -187,18 +187,18 @@ def train_model(model_type, train_dir, case_name):
                 for model_file in scripts_dir.glob(f"*{model_type}*"):
                     if model_file.suffix in ['.pth', '.pt', '.pkl']:
                         shutil.copy2(model_file, model_output / model_file.name)
-                        print(f"    📁 Copied model: {model_file.name}")
+                        print(f"    Copied model: {model_file.name}")
             
             return True
         else:
-            print(f"    ❌ {model_type} training failed: {result.stderr}")
+            print(f"    {model_type} training failed: {result.stderr}")
             return False
             
     except subprocess.TimeoutExpired:
-        print(f"    ⏰ {model_type} training timed out")
+        print(f"    {model_type} training timed out")
         return False
     except Exception as e:
-        print(f"    ❌ {model_type} training error: {e}")
+        print(f"    {model_type} training error: {e}")
         return False
     finally:
         os.chdir(original_cwd)
@@ -216,11 +216,11 @@ def evaluate_model(model_type, case_name):
     is_mac_simulation = not torch.cuda.is_available()
     
     if is_mac_simulation:
-        print(f"    🖥️  Running on Mac (CPU) - simulating evaluation process...")
-        
+        print("    Running on CPU - simulating evaluation process")
+
         # Simulate evaluation for Mac testing
         import time
-        print(f"    🔄 Simulating evaluation for {model_type}...")
+        print(f"    Simulating evaluation for {model_type}...")
         time.sleep(1)  # Simulate evaluation time
         
         # Create results directory
@@ -242,13 +242,13 @@ def evaluate_model(model_type, case_name):
         import json
         with open(metrics_file, 'w') as f:
             json.dump(metrics, f, indent=2)
-        
-        print(f"    ✅ {model_type} evaluation simulation completed")
-        print(f"    📊 Metrics: P={metrics['precision']:.3f}, R={metrics['recall']:.3f}, F1={metrics['f1_score']:.3f}")
+
+        print(f"    {model_type} evaluation simulation completed")
+        print(f"    Metrics: P={metrics['precision']:.3f}, R={metrics['recall']:.3f}, F1={metrics['f1_score']:.3f}")
         return True
     
     # Real evaluation for CUDA laptop
-    print(f"    🚀 Running real evaluation on CUDA...")
+    print("    Running real evaluation on CUDA")
     
     # Model-specific evaluation commands
     if model_type == "deeplab":
@@ -285,16 +285,16 @@ def evaluate_model(model_type, case_name):
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)  # 10 min timeout
         if result.returncode == 0:
-            print(f"    ✅ {model_type} evaluation completed")
+            print(f"    {model_type} evaluation completed")
             return True
         else:
-            print(f"  ❌ {model_type} evaluation failed: {result.stderr}")
+            print(f"  {model_type} evaluation failed: {result.stderr}")
             return False
     except subprocess.TimeoutExpired:
-        print(f"    ⏰ {model_type} evaluation timed out")
+        print(f"    {model_type} evaluation timed out")
         return False
     except Exception as e:
-        print(f"    ❌ {model_type} evaluation error: {e}")
+        print(f"    {model_type} evaluation error: {e}")
         return False
 
 def collect_metrics(case_name):
@@ -329,7 +329,7 @@ def main():
     
     models_to_evaluate = args.models.split(",")
     
-    print("🚀 Starting Pseudo-Label Evaluation")
+    print("Starting pseudo-label evaluation")
     print("=" * 50)
     
     setup_directories()
@@ -350,22 +350,22 @@ def main():
         cases = [case for case in cases if args.case in case[3]]
     
     total_cases = len(cases)
-    print(f"📊 Evaluating {total_cases} cases:")
+    print(f"Evaluating {total_cases} cases:")
     for img_count, agreement, handling, case_name in cases:
         print(f"   - {img_count} images, K={agreement}, {handling} unknown pixels")
     
     print("\n" + "=" * 50)
     
     for i, (img_count, agreement, handling, case_name) in enumerate(cases, 1):
-        print(f"\n🔍 Case {i}/{total_cases}: {case_name}")
+        print(f"\nCase {i}/{total_cases}: {case_name}")
         print(f"   Images: {img_count}, Agreement: K={agreement}, Unknown: {handling}")
-        
+
         start_time = time.time()
-        
+
         # Create training dataset
-        print("  📁 Creating training dataset...")
+        print("  Creating training dataset...")
         train_dir = create_training_dataset(img_count, agreement, handling)
-        
+
         # Train models
         training_results = {}
         for model_type in models_to_evaluate:
@@ -373,7 +373,7 @@ def main():
                 training_results[model_type] = "success"
             else:
                 training_results[model_type] = "failed"
-        
+
         # Evaluate models
         evaluation_results = {}
         for model_type in models_to_evaluate:
@@ -384,10 +384,10 @@ def main():
                     evaluation_results[model_type] = "failed"
             else:
                 evaluation_results[model_type] = "skipped"
-        
+
         # Collect metrics
         metrics = collect_metrics(case_name)
-        
+
         # Store results
         case_results = {
             "case_name": case_name,
@@ -399,16 +399,16 @@ def main():
             "metrics": metrics,
             "execution_time": time.time() - start_time
         }
-        
+
         all_results[case_name] = case_results
-        
+
         # Save case results
         results_file = OUTPUT_DIR / case_name / "case_results.json"
         with open(results_file, 'w') as f:
             json.dump(case_results, f, indent=2)
-        
-        print(f"  ⏱️  Case completed in {case_results['execution_time']:.1f}s")
-        
+
+        print(f"  Case completed in {case_results['execution_time']:.1f}s")
+
         # Clean up temporary files
         if train_dir.exists():
             shutil.rmtree(train_dir)
@@ -420,7 +420,7 @@ def main():
     
     # Print summary
     print("\n" + "=" * 50)
-    print("📋 EVALUATION SUMMARY")
+    print("EVALUATION SUMMARY")
     print("=" * 50)
     
     for case_name, results in all_results.items():
@@ -429,8 +429,8 @@ def main():
         print(f"  Evaluation: {results['evaluation_results']}")
         print(f"  Time: {results['execution_time']:.1f}s")
     
-    print(f"\n✅ Evaluation complete! Results saved to {OUTPUT_DIR}")
-    print(f"📊 Overall results: {overall_results_file}")
+    print(f"\nEvaluation complete. Results saved to {OUTPUT_DIR}")
+    print(f"Overall results: {overall_results_file}")
 
 if __name__ == "__main__":
     main()
