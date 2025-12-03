@@ -4,6 +4,8 @@
 import multiprocessing
 import os
 import copy
+import random
+import numpy as np
 from torch.utils.data import random_split, DataLoader
 import torch
 import torch.nn as nn
@@ -15,19 +17,34 @@ from models.deeplab.dataset import SemanticSegmentationDataset
 from models.deeplab.model   import build_model
 
 # ─── Configuration ──────────────────────────────────
-device              = torch.device('cuda', index=0)  
-batch_size          = 4
-num_epochs          = 80
+SEED               = 42
+device             = torch.device('cuda', index=0)  
+batch_size         = 4
+num_epochs         = 80
 early_stop_patience = 10
-lr                  = 1e-4
-train_val_split     = 0.8
-num_workers         = 0
+lr                 = 1e-4
+train_val_split    = 0.8
+num_workers        = 0
 # ────────────────────────────────────────────────────
+
+
+def set_deterministic(seed: int = SEED):
+    """Seed all RNGs so train/val splits and training are repeatable."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    os.environ["PYTHONHASHSEED"] = str(seed)
+
 
 def train_split(base_dir, split_name, scripts_dir):
     full_ds = SemanticSegmentationDataset(base_dir, split_name)
     n_train = int(len(full_ds) * train_val_split)
-    train_ds, val_ds = random_split(full_ds, [n_train, len(full_ds) - n_train])
+    g = torch.Generator().manual_seed(SEED)
+    train_ds, val_ds = random_split(full_ds, [n_train, len(full_ds) - n_train], generator=g)
 
     train_loader = DataLoader(
         train_ds, batch_size=batch_size, shuffle=True,
@@ -98,6 +115,8 @@ def train_split(base_dir, split_name, scripts_dir):
     print(f"[{split_name}] Training complete. Final weights saved to {final_path}")
 
 def main():
+    set_deterministic(SEED)
+
     root        = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     base        = os.path.join(root, 'dataset')
     scripts_dir = os.path.join(root, 'scripts')
