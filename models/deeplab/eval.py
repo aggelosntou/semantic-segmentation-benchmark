@@ -139,7 +139,7 @@ def main():
             weights_path = os.path.join(PROJECT_ROOT, 'scripts', WEIGHTS.get(split, 'deeplab_train.pth'))
         
         if not os.path.exists(weights_path):
-            print(f"❌ Model weights not found at: {weights_path}")
+            print(f" Model weights not found at: {weights_path}")
             print("Available files in scripts folder:")
             scripts_dir = os.path.join(PROJECT_ROOT, 'scripts')
             if os.path.exists(scripts_dir):
@@ -164,7 +164,7 @@ def main():
                     predict_split(model,img_dir,pred_dir,single_image=args.single_image[1])
                 if do_eval:
                     m = evaluate_split(pred_dir,img_dir,mask_dir,single_image=args.single_image[1])
-                    print(f"\n📊 Metrics for '{args.single_image[1]}' in {split}:")
+                    print(f"\n Metrics for '{args.single_image[1]}' in {split}:")
                     print(f"{'Class':<12}{'P':>6}{'R':>6}{'F1':>6}")
                     print('-'*30)
                     for i,n in enumerate(CLASS_NAMES): 
@@ -177,15 +177,15 @@ def main():
                 print(f"Evaluating '{split}'")
                 res = evaluate_split(pred_dir,img_dir,mask_dir)
                 results[split] = res
-                
-                print(f"\n📊 Metrics for '{split}':")
+
+                print(f"\n Metrics for '{split}':")
                 print(f"{'Class':<12}{'P':>6}{'R':>6}{'F1':>6}")
                 print('-'*30)
                 for i,n in enumerate(CLASS_NAMES): 
                     print(f"{n:<12}{res['p'][i]:6.3f}{res['r'][i]:6.3f}{res['f1'][i]:6.3f}")
     
     if len(results) > 1:
-        print(f"\n📋 SUMMARY:")
+        print(f"\n SUMMARY:")
         for split, res in results.items():
             print(f"{split}: P={res['p'].mean():.3f}, R={res['r'].mean():.3f}, F1={res['f1'].mean():.3f}")
 
