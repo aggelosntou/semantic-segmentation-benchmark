@@ -1,5 +1,6 @@
 """
 Semantic Segmentation Dataset for DeepLab training.
+Supports labeled and unlabeled (SSL) splits.
 """
 import torch
 import os
@@ -11,7 +12,10 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 
-# --- Configuration ---
+# --- SSL configuration ---
+IGNORE_INDEX = 255
+
+# --- Dataset configuration ---
 IMG_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.tif', '.tiff')
 CLASS_RGB = {
     (155, 155, 155): 0,  # Unknown
@@ -27,10 +31,6 @@ NUM_CLASSES = len(CLASS_RGB)
 
 
 def list_files(directory: str) -> List[str]:
-    """
-    Enumerate all image files in `directory` with supported extensions,
-    returned in sorted order.
-    """
     files: List[str] = []
     for ext in IMG_EXTENSIONS:
         files.extend(glob(os.path.join(directory, f'*{ext}')))
@@ -38,10 +38,6 @@ def list_files(directory: str) -> List[str]:
 
 
 def rgb_to_mask(mask_img: Image.Image) -> np.ndarray:
-    """
-    Convert an RGB PIL image (color-coded labels) to a H×W int64 mask
-    where each pixel’s value is the class index.
-    """
     arr = np.array(mask_img)
     h, w, _ = arr.shape
     label = np.zeros((h, w), dtype=np.int64)
@@ -51,55 +47,49 @@ def rgb_to_mask(mask_img: Image.Image) -> np.ndarray:
     return label
 
 
-def load_dataset(img_dir: str, mask_dir: str) -> Tuple[List[np.ndarray], List[np.ndarray]]:
-    """
-    Load all images and their corresponding masks from parallel directories.
-
-    Returns:
-        imgs  – list of H×W×3 uint8 RGB arrays
-        masks – list of H×W int64 class-index arrays
-    """
-    img_paths = list_files(img_dir)
-    mask_paths = list_files(mask_dir)
-    if len(img_paths) != len(mask_paths):
-        raise ValueError(
-            f"Image/mask count mismatch: {len(img_paths)} images vs {len(mask_paths)} masks"
-        )
-
-    imgs, masks = [], []
-    for img_p, mask_p in zip(img_paths, mask_paths):
-        imgs.append(np.array(Image.open(img_p).convert('RGB')))
-        masks.append(rgb_to_mask(Image.open(mask_p).convert('RGB')))
-    return imgs, masks
-
-
 class SemanticSegmentationDataset(Dataset):
     """
-    Torch Dataset for DeepLab training/inference.
+    Torch Dataset for DeepLab training and SSL.
     """
-    def __init__(self, base_dir: str, split: str, transforms: T.Compose = None):
-        img_dir = os.path.join(base_dir, split, 'image')
-        mask_dir = os.path.join(base_dir, split, 'mask')
-
+    def __init__(
+        self,
+        base_dir: str,
+        split: str,
+        transforms: T.Compose = None,
+        unlabeled: bool = False,
+    ):
+        img_dir = os.path.join(base_dir, split, "image")
         self.img_paths = list_files(img_dir)
-        self.mask_paths = list_files(mask_dir)
-        if len(self.img_paths) != len(self.mask_paths):
-            raise ValueError(f"Image/mask count mismatch for split '{split}'")
+
+        self.unlabeled = unlabeled
+        if not unlabeled:
+            mask_dir = os.path.join(base_dir, split, "mask")
+            self.mask_paths = list_files(mask_dir)
+            if len(self.img_paths) != len(self.mask_paths):
+                raise ValueError(f"Image/mask count mismatch for split '{split}'")
 
         self.transforms = transforms or T.Compose([
             T.ToTensor(),
-            T.Normalize(mean=[0.485, 0.456, 0.406],
-                        std=[0.229, 0.224, 0.225])
+            T.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            )
         ])
 
     def __len__(self) -> int:
         return len(self.img_paths)
 
     def __getitem__(self, idx: int):
-        img = Image.open(self.img_paths[idx]).convert('RGB')
+        img = Image.open(self.img_paths[idx]).convert("RGB")
         img_tensor = self.transforms(img)
 
-        mask = Image.open(self.mask_paths[idx]).convert('RGB')
+        if self.unlabeled:
+            return img_tensor
+
+        mask = Image.open(self.mask_paths[idx]).convert("RGB")
         mask_tensor = torch.from_numpy(rgb_to_mask(mask)).long()
+
+        # Unknown pixels → ignore in loss
+        mask_tensor[mask_tensor == 0] = IGNORE_INDEX
 
         return img_tensor, mask_tensor
